@@ -1,8 +1,6 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
-const hashPassword = require('../helpers/bcrypt')
+const { Model } = require('sequelize');
+const { hashPassword } = require('../helpers/bcrypt');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -13,48 +11,52 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
-  };
-  User.init({
-    first_name: {
-      type: DataTypes.STRING,
-      validate: {
-        notEmpty: {
-          args: true,
-          msg: 'First Name is Required'
-        }
-      }
-    },
-    last_name: DataTypes.STRING,
-    email: {
-      type: DataTypes.STRING,
-      validate: {
-        isEmail: {
-          args: true,
-          msg: 'Invalid Email / Password Format'
-        }
+  }
+  User.init(
+    {
+      first_name: {
+        type: DataTypes.STRING,
+        validate: {
+          notEmpty: {
+            args: true,
+            msg: 'First Name is Required',
+          },
+        },
       },
-      unique: true
+      last_name: DataTypes.STRING,
+      full_name: DataTypes.STRING,
+      email: {
+        type: DataTypes.STRING,
+        validate: {
+          isEmail: {
+            args: true,
+            msg: 'Invalid Email / Password Format',
+          },
+        },
+        unique: true,
+      },
+      password: {
+        type: DataTypes.STRING,
+        validate: {
+          len: {
+            args: [6],
+            msg: 'Password at least 6 characters',
+          },
+        },
+      },
     },
-    password: {
-      type:  DataTypes.STRING,
-      validate: {
-        len: {
-          args: [6],
-          msg: 'Password at least 6 characters'
-        }
-      }
+    {
+      sequelize,
+      modelName: 'User',
     }
-  }, {
-    sequelize,
-    modelName: 'User',
-  });
+  );
 
   User.beforeCreate((user, options) => {
-    if(user.last_name === '') {
-      user.last_name = user.first_name
+    user.full_name = `${user.first_name} ${user.last_name}`;
+    if (user.last_name === '') {
+      user.full_name = user.first_name;
     }
-
-    user.password = hashPassword(user.password)
-  })
+    user.password = hashPassword(user.password);
+  });
   return User;
 };

@@ -1,3 +1,6 @@
+if (process.env.NODE_ENV === 'development') {
+  require('dotenv').config();
+}
 const express = require('express');
 const routers = require('./routers');
 const app = express();
