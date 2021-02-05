@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.belongsTo(models.User)
     }
   };
   Todo.init({
@@ -33,7 +34,8 @@ module.exports = (sequelize, DataTypes) => {
           msg: 'do not enter the date that is past today'
         }
       }
-    }
+    },
+    UserId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Todo',

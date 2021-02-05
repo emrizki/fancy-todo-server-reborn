@@ -8,6 +8,7 @@ class TodoController {
         description: req.body.description,
         status: req.body.status,
         due_date: req.body.due_date,
+        UserId: req.user.id
       };
 
       const newTodo = await Todo.create(payload);
@@ -23,7 +24,11 @@ class TodoController {
 
   static async getAllTodos(req, res) {
     try {
-      const todos = await Todo.findAll();
+      const todos = await Todo.findAll({
+        where: {
+          UserId: req.user.id
+        }
+      });
       res.status(200).json(todos);
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error' });
