@@ -11,12 +11,12 @@ module.exports = async (req, res, next) => {
       if(user) {
         next()
       } else {
-        res.status(401).json({message: 'Please Login First'})
+        next({name: 'authentication'})
       }
     } else {
-      res.status(401).json({message: 'Please Login First'})
+      next({name: 'needJWT'})
     }
   } catch (error) {
-    res.status(500).json({message: 'JWT not valid'})
+    next(error)
   }
 }

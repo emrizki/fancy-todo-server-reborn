@@ -3,7 +3,7 @@ const { comparePassword } = require('../helpers/bcrypt');
 const { generateToken } = require('../helpers/jwt');
 
 class UserController {
-  static async register(req, res) {
+  static async register(req, res, next) {
     try {
       const newUser = {
         first_name: req.body.first_name,
@@ -20,16 +20,16 @@ class UserController {
       res.status(201).json(response);
     } catch (error) {
       if (error.errors[0].path === 'email') {
-        res.status(400).json({ message: error.errors[0].message });
+        next({name: 'email', message: error.errors[0].message })
       } else if (error.errors[0].path === 'password') {
-        res.status(400).json({ message: error.errors[0].message });
+        next({name: 'password', message: error.errors[0].message})
       } else {
-        res.status(500).json(error.message);
+        next(error)
       }
     }
   }
 
-  static async login(req, res) {
+  static async login(req, res, next) {
     try {
       const { email, password } = req.body;
       const user = await User.findOne({
@@ -47,13 +47,13 @@ class UserController {
           });
           res.status(200).json({ access_token });
         } else {
-          res.status(400).json({ message: 'Invalid Email or Password' });
+          next({name: 'passwordNotMatch'})
         }
       } else {
-        res.status(400).json({ message: 'Invalid Email or Password' });
+        next({name: 'emailNotValid'})
       }
     } catch (error) {
-      res.status(500).json(error.message);
+      next(error)
     }
   }
 }

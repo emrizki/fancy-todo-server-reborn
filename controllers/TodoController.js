@@ -1,7 +1,7 @@
 const { Todo } = require('../models');
 
 class TodoController {
-  static async createTodo(req, res) {
+  static async createTodo(req, res, next) {
     try {
       const payload = {
         title: req.body.title,
@@ -15,41 +15,46 @@ class TodoController {
       res.status(201).json(newTodo);
     } catch (error) {
       if (error.errors[0].path === 'due_date') {
-        res.status(400).json({message: error.errors[0].message});
+        next({name: 'due_date', message: error.errors[0].message})
       } else {
-        res.status(500).json({ message: 'Internal Server Error' });
+        next(error)
       }
     }
   }
 
-  static async getAllTodos(req, res) {
+  static async getAllTodos(req, res, next) {
     try {
       const todos = await Todo.findAll({
         where: {
-          UserId: req.user.id
+          UserId: +req.user.id
         }
       });
       res.status(200).json(todos);
     } catch (error) {
-      res.status(500).json({ message: 'Internal Server Error' });
+      next(error)
     }
   }
 
-  static async getTodoById(req, res) {
+  static async getTodoById(req, res, next) {
     try {
       const id = +req.params.id;
-      const todo = await Todo.findByPk(id);
-      if (todo === null) {
-        res.status(404).json({ message: 'Todo Not Found' });
-      } else {
+      const todo = await Todo.findOne({
+        where: {
+          id: id,
+          UserId: req.user.id
+        }
+      });
+      if (todo) {
         res.status(200).json(todo);
+      } else {
+        next({name: 'todoNotFound'})
       }
     } catch (error) {
-      res.status(500).json({ message: 'Internal Server Error' });
+      next(error)
     }
   }
 
-  static async updateTodo(req, res) {
+  static async updateTodo(req, res, next) {
     try {
       const id = +req.params.id;
       const payload = {
@@ -64,20 +69,20 @@ class TodoController {
         returning: true,
       });
       if (todo[0] === 0) {
-        res.status(404).json({ message: 'Todo Not Found' });
+        next({name: 'todoNotFound'})
       } else {
         res.status(200).json(todo[1][0]);
       }
     } catch (error) {
       if (error.errors[0].path === 'due_date') {
-        res.status(400).json(error.errors[0]);
+        next({name: 'due_date', messsage: error.errors[0].message})
       } else {
-        res.status(500).json({ message: 'Internal Server Error' });
+        next(error)
       }
     }
   }
 
-  static async updateStatus(req, res) {
+  static async updateStatus(req, res, next) {
     try {
       const id = +req.params.id;
 
@@ -91,33 +96,32 @@ class TodoController {
       });
 
       if (todo[0] === 0) {
-        res.status(404).json({ message: 'Todo Not Found' });
+        next({name: 'todoNotFound'})
       } else {
         res.status(200).json(todo[1][0]);
       }
     } catch (error) {
       if (error.errors[0].path === 'status') {
-        res.status(400).json(error.errors[0]);
+        next({name: 'status'})
       } else {
-        rezs.status(500).json({ message: 'Internal Server Error' });
+        next(error)
       }
     }
   }
 
-  static async deleteTodo(req, res) {
+  static async deleteTodo(req, res, next) {
     try {
       const id = +req.params.id;
       const todo = await Todo.destroy({
         where: { id },
       });
-
-      if (todo === 0) {
-        res.status(404).json({ message: 'Todo Not Found' });
-      } else {
+      if (todo) {
         res.status(200).json({ message: 'Todo success to delete' });
+      } else {
+        next({name: 'todoNotFound'})
       }
     } catch (error) {
-      res.status(500).json({ message: 'Internal Server Error' });
+      next(error)
     }
   }
 }
