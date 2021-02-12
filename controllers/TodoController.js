@@ -1,4 +1,4 @@
-const { Todo } = require('../models');
+const { User, Todo } = require('../models');
 
 class TodoController {
   static async createTodo(req, res, next) {
@@ -21,20 +21,19 @@ class TodoController {
       }
     }
   }
-
   static async getAllTodos(req, res, next) {
     try {
       const todos = await Todo.findAll({
         where: {
           UserId: +req.user.id
-        }
+        },
+        include: User
       });
       res.status(200).json(todos);
     } catch (error) {
       next(error)
     }
   }
-
   static async getTodoById(req, res, next) {
     try {
       const id = +req.params.id;
@@ -53,7 +52,6 @@ class TodoController {
       next(error)
     }
   }
-
   static async updateTodo(req, res, next) {
     try {
       const id = +req.params.id;
@@ -81,7 +79,6 @@ class TodoController {
       }
     }
   }
-
   static async updateStatus(req, res, next) {
     try {
       const id = +req.params.id;
@@ -108,7 +105,6 @@ class TodoController {
       }
     }
   }
-
   static async deleteTodo(req, res, next) {
     try {
       const id = +req.params.id;
