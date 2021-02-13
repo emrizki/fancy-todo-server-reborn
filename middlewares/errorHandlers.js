@@ -13,7 +13,7 @@ module.exports = (err, req, res, next) => {
       res.status(400).json({message: 'Invalid Password / Email'})
       break
     case 'authentication':
-      res.status(401).json({message: 'Please Login First'})
+      res.status(401).json({message: 'Welcome to Fancy todo Reborn'})
       break
     case 'needJWT':
       res.status(401).json({message: 'Please Login First'})
